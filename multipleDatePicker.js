@@ -137,22 +137,31 @@
                      * The moment object with functions. Optional if you dont want it on the global scope
                      */
                     moment: '=?',
+
+                    /*
+                     * Type: int
+                     * If true will show full year calendar
+                     */
+                    year: '=?',
+                    /*
+                     * Type: boolean
+                     * If true will show full year calendar
+                     */
+                    showAllYear: '=?',
                 },
-                template: '<div class="multiple-date-picker">' +
+                template: '<div class="multiple-date-picker" layout="row">' +
+                '<div class="monthWrapper" ng-repeat="month in months" flex="30">' +
                 '<div class="picker-top-row">' +
-                '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="changeMonth($event, disableBackButton, -1)">&lt;</div>' +
                 '<div class="text-center picker-month">' +
-                '{{monthToDisplay}} ' +
-                '<span ng-if="yearsForSelect.length < 2">{{yearToDisplay}}</span>' +
-                '<select ng-if="yearsForSelect.length > 1" ng-model="year" ng-change="changeYear(year)" ng-options="y for y in yearsForSelect"></select>' +
+                '{{month.monthToDisplay}} ' +
                 '</div>' +
-                '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="changeMonth($event, disableNextButton, 1)">&gt;</div>' +
                 '</div>' +
                 '<div class="picker-days-week-row">' +
                 '<div class="text-center" ng-repeat="day in daysOfWeek">{{day}}</div>' +
                 '</div>' +
                 '<div class="picker-days-row">' +
-                '<div class="text-center picker-day {{getDayClasses(day)}}" title="{{day.title}}" ng-repeat="day in days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" mdp-right-click="rightClicked($event,day)">{{day ? day.mdp.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.date.format(\'D\') : \'\'}}</div>' +
+                '<div class="text-center picker-day {{getDayClasses(day)}}" title="{{day.title}}" ng-repeat="day in month.days" ng-click="toggleDay($event, day)" ng-mouseover="hoverDay($event, day)" ng-mouseleave="dayHover($event, day)" mdp-right-click="rightClicked($event,day)">{{day ? day.mdp.otherMonth && !showDaysOfSurroundingMonths ? \'&nbsp;\' : day.date.format(\'D\') : \'\'}}</div>' +
+                '</div>' +
                 '</div>' +
                 '</div>',
                 link: function (scope) {
@@ -204,6 +213,54 @@
                                 }
                             }
                             return result;
+                        },
+                        getMonthDays = function (month) {
+                            var previousDay = moment(month).date(0).day(scope.sundayFirstDay ? 0 : 1).subtract(1, 'day');
+
+                            if (moment(month).date(0).diff(previousDay, 'day') > 6) {
+                                previousDay = previousDay.add(1, 'week');
+                            }
+
+                            var firstDayOfMonth = moment(month).date(1),
+                                days = [],
+                                now = moment(),
+                                lastDay = moment(firstDayOfMonth).endOf('month'),
+                                createDate = function () {
+                                    var day = {
+                                        date: moment(previousDay.add(1, 'day')),
+                                        mdp: {
+                                            selected: false
+                                        }
+                                    };
+                                    if (angular.isArray(scope.highlightDays)) {
+                                        var hlDay = scope.highlightDays.filter(function (d) {
+                                            return day.date.isSame(d.date, 'day');
+                                        });
+                                        day.css = hlDay.length > 0 ? hlDay[0].css : '';
+                                        day.title = hlDay.length > 0 ? hlDay[0].title : '';
+                                    }
+                                    day.selectable = !scope.isDayOff(day);
+                                    day.mdp.selected = scope.isSelected(day);
+                                    day.mdp.today = day.date.isSame(now, 'day');
+                                    day.mdp.past = day.date.isBefore(now, 'day');
+                                    day.mdp.future = day.date.isAfter(now, 'day');
+                                    if (!day.date.isSame(month, 'month')) {
+                                        day.mdp.otherMonth = true;
+                                    }
+                                    return day;
+                                },
+                                maxDays = lastDay.diff(previousDay, 'days'),
+                                lastDayOfWeek = scope.sundayFirstDay ? 6 : 0;
+
+                            if (lastDay.day() !== lastDayOfWeek) {
+                                maxDays += (scope.sundayFirstDay ? 6 : 7) - lastDay.day();
+                            }
+
+                            for (var j = 0; j < maxDays; j++) {
+                                days.push(createDate());
+                            }
+
+                            return days;
                         };
 
                     /*scope functions*/
@@ -273,6 +330,7 @@
                         }
                     });
                     //default values
+                    scope.months = [];
                     scope.month = scope.month || moment().startOf('day');
                     scope.days = [];
                     scope.weekDaysOff = scope.weekDaysOff || [];
@@ -453,58 +511,21 @@
 
                     /*Generate the calendar*/
                     scope.generate = function () {
-                        scope.year = scope.month.year().toString();
-                        scope.yearsForSelect = getYearsForSelect();
-                        scope.monthToDisplay = getMonthYearToDisplay();
-                        scope.yearToDisplay = scope.month.format('YYYY');
-                        var previousDay = moment(scope.month).date(0).day(scope.sundayFirstDay ? 0 : 1).subtract(1, 'day');
-
-                        if (moment(scope.month).date(0).diff(previousDay, 'day') > 6) {
-                            previousDay = previousDay.add(1, 'week');
+                        moment.locale('es');
+                        moment().year(scope.month.year());
+                        scope.months = [];
+                        for (var i=0; i<12; i++) {
+                            var monthMoment = moment().month(i);
+                            var month = {
+                                year: scope.month.year().toString(),
+                                monthToDisplay: monthMoment.format('MMMM'),
+                                days: getMonthDays(monthMoment)
+                            };
+                            scope.months.push(month);
                         }
-
-                        var firstDayOfMonth = moment(scope.month).date(1),
-                            days = [],
-                            now = moment(),
-                            lastDay = moment(firstDayOfMonth).endOf('month'),
-                            createDate = function () {
-                                var day = {
-                                    date: moment(previousDay.add(1, 'day')),
-                                    mdp: {
-                                        selected: false
-                                    }
-                                };
-                                if (angular.isArray(scope.highlightDays)) {
-                                    var hlDay = scope.highlightDays.filter(function (d) {
-                                        return day.date.isSame(d.date, 'day');
-                                    });
-                                    day.css = hlDay.length > 0 ? hlDay[0].css : '';
-                                    day.title = hlDay.length > 0 ? hlDay[0].title : '';
-                                }
-                                day.selectable = !scope.isDayOff(day);
-                                day.mdp.selected = scope.isSelected(day);
-                                day.mdp.today = day.date.isSame(now, 'day');
-                                day.mdp.past = day.date.isBefore(now, 'day');
-                                day.mdp.future = day.date.isAfter(now, 'day');
-                                if (!day.date.isSame(scope.month, 'month')) {
-                                    day.mdp.otherMonth = true;
-                                }
-                                return day;
-                            },
-                            maxDays = lastDay.diff(previousDay, 'days'),
-                            lastDayOfWeek = scope.sundayFirstDay ? 6 : 0;
-
-                        if (lastDay.day() !== lastDayOfWeek) {
-                            maxDays += (scope.sundayFirstDay ? 6 : 7) - lastDay.day();
-                        }
-
-                        for (var j = 0; j < maxDays; j++) {
-                            days.push(createDate());
-                        }
-
-                        scope.days = days;
-                        checkNavigationButtons();
                     };
+
+
 
                     scope.generate();
                 }
