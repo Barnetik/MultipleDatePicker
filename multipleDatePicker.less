@@ -1,7 +1,6 @@
+
 @border-color: #eee;
-
 @empty-day-background: #fafafa;
-
 @picker-day-today: #00a3ff;
 
 @non-pickable-day-background: #eee;
@@ -13,6 +12,18 @@
 @pickable-day-picked-background: #C6000B;
 @pickable-day-picked-color: #fff;
 
+/* Barnetik Changes END */
+@desktop: ~"only screen and (min-width: 720px)";
+@phones: ~"only screen and (max-width: 720px)";
+
+@red: #C6000B;
+@green: #94C970;
+@blue: #00BCD1;
+
+.picker-days-week-row > div {
+    text-transform: capitalize;
+}
+
 .text-center{
   text-align: center;
 }
@@ -20,11 +31,58 @@
 .multiple-date-picker{
   user-select: none;
 }
-.multiple-date-picker, .picker-top-row, .picker-days-week-row, .picker-days-row{
+.multiple-date-picker, .picker-top-row, .picker-days-week-row, .picker-days-row {
   width: 100%;
   flex-wrap: wrap;
-  justify-content: space-around;
+  justify-content: space-between;
 }
+
+.monthWrapper {
+    margin: 20px;
+
+    @media @desktop {
+        flex: 1 0 30%;
+    }
+
+    @media @phones {
+        flex: 1 0 90%;
+    }
+}
+
+.monthWrapper .picker-month {
+    text-transform: capitalize;
+    width: 100%;
+}
+
+.groupColorPicker {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    box-shadow: 1px 2px 6px 1px #ccc;
+    align-items: center;
+}
+
+.groupColorPicker .color {
+    width: 150px;
+    box-shadow: 1px 2px 6px 1px #ccc;
+    cursor: pointer;
+    height: 25px;
+    margin: 20px 0;
+}
+.groupColorPicker .color.active {
+    border: 2px solid #000;
+}
+.groupColorPicker .color.red:not(.picker-empty) {
+    background-color: @red;
+}
+.groupColorPicker .color.green:not(.picker-empty) {
+    background-color: @green;
+}
+.groupColorPicker .color.blue:not(.picker-empty) {
+    background-color: @blue;
+}
+
+/* Barnetik Changes END */
 
 .picker-top-row > div{
   display: inline-block;
@@ -84,8 +142,21 @@
 }
 
 .picker-day.picker-selected{
-  background-color: @pickable-day-picked-background;
   color: @pickable-day-picked-color;
+}
+
+.picker-day.currentred:not(.picker-off):not(.picker-empty):hover,
+.picker-day.picker-selected.red:not(.picker-empty){
+    background-color: @red;
+}
+
+.picker-day.currentgreen:not(.picker-off):not(.picker-empty):hover,
+.picker-day.picker-selected.green:not(.picker-empty){
+    background-color: @green;
+}
+.picker-day.currentblue:not(.picker-off):not(.picker-empty):hover,
+.picker-day.picker-selected.blue:not(.picker-empty){
+    background-color: @blue;
 }
 
 .picker-day.picker-off, .picker-day.picker-off:hover{
