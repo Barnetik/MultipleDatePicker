@@ -11,7 +11,8 @@
  */
 (function (angular) {
     'use strict';
-    var multipleDatePicker = function () {
+    angular.module('multipleDatePicker', [])
+        .directive('multipleDatePicker', ['$mdDialog', '$translate', function ($mdDialog, $translate) {
             return {
                 restrict: 'AE',
                 scope: {
@@ -150,18 +151,26 @@
                     showAllYear: '=?',
                 },
                 template:
-                '<div class="groupColorPicker" layout="row" layout-sm="column">' +
-                    '<div class="color red" ng-class="groupActiveClass(\'red\')" ng-click="changeGroupColor(\'red\')"></div>' +
-                    '<div class="color green" ng-class="groupActiveClass(\'green\')" ng-click="changeGroupColor(\'green\')"></div>' +
-                    '<div class="color blue" ng-class="groupActiveClass(\'blue\')" ng-click="changeGroupColor(\'blue\')"></div>' +
-                '</div>' +
                 '<div class="multiple-date-picker" layout="row" layout-sm="column">' +
-                '<div class="picker-top-row">' +
+                '<div class="picker-top-row yearWrapper">' +
                 '<div class="text-center picker-navigate picker-navigate-left-arrow" ng-class="{\'disabled\':disableBackButton}" ng-click="changeYear(disableBackButton, -1)">&lt;</div>' +
                 '<div class="text-center picker-month">' +
                 '<span>{{year.year()}}</span>' +
                 '</div>' +
                 '<div class="text-center picker-navigate picker-navigate-right-arrow" ng-class="{\'disabled\':disableNextButton}" ng-click="changeYear(disableNextButton, 1)">&gt;</div>' +
+                '</div>' +
+                '<div class="copyPastYear" layout="row">' +
+                '<md-fab-speed-dial md-direction="right" class="md-fling">' +
+                '<md-fab-trigger>'+
+                '<md-button class="md-fab md-mini zmdi zmdi-calendar" ng-class="currentColorClass" aria-label="Add User"><md-tooltip>{{ "TEXT.CHANGE_CALENDAR" | translate }}</md-tooltip></md-button>' +
+                '</md-fab-trigger>' +
+                '<md-fab-actions>' +
+                '<md-button ng-click="changeGroupColor(\'red\')" class="md-fab md-mini zmdi zmdi-calendar multipleDatePicker-red" aria-label="Add User"></md-button>' +
+                '<md-button ng-click="changeGroupColor(\'green\')" class="md-fab md-mini zmdi zmdi-calendar multipleDatePicker-green" aria-label="Add User"></md-button>' +
+                '<md-button ng-click="changeGroupColor(\'blue\')" class="md-fab md-mini zmdi zmdi-calendar multipleDatePicker-blue" aria-label="Add User"></md-button>' +
+                '</md-fab-actions>' +
+                '</md-fab-speed-dial>'+
+                '<div><md-button class="md-fab md-mini zmdi zmdi-copy" ng-click="copyPreviousYear()"><md-tooltip>{{"TEXT.COPY_PREVIOUS_YEAR" | translate}}</md-tooltip></md-button></div>' +
                 '</div>' +
                 '<div class="monthWrapper" ng-repeat="month in months">' +
                 '<div class="picker-top-row">' +
@@ -181,20 +190,8 @@
                     /*jshint ignore:start*/
                     var moment = window['moment'] || scope.moment;
                     /*jshint ignore:end*/
-                    scope.ngModel = scope.ngModel || {
-                        red : [],
-                        green : [],
-                        blue : [],
-                    };
-                    if (!scope.ngModel.red) {
-                        scope.ngModel.red = [];
-                    }
-                    if (!scope.ngModel.green) {
-                        scope.ngModel.green = [];
-                    }
-                    if (!scope.ngModel.blue) {
-                        scope.ngModel.blue = [];
-                    }
+                    var currentYear = scope.year || moment();
+                    scope.ngModel = scope.ngModel || initYearObject();
 
                     /*utility functions*/
                     var checkNavigationButtons = function () {
@@ -206,6 +203,24 @@
                             scope.nextYear = nextYear.format('YYYY');
                             scope.disableBackButton = today.isAfter(previousYear, 'year');
                             scope.disableNextButton = lastYear.isBefore(nextYear, 'year');
+                        },
+                        initYearObject = function() {
+                            if (!scope.ngModel[currentYear.year()]) {
+                                scope.ngModel[currentYear.year()] = {
+                                    red : [],
+                                    green : [],
+                                    blue : [],
+                                };
+                            }
+                            if (!scope.ngModel[currentYear.year()].red) {
+                                scope.ngModel[currentYear.year()].red = [];
+                            }
+                            if (!scope.ngModel[currentYear.year()].green) {
+                                scope.ngModel[currentYear.year()].green = [];
+                            }
+                            if (!scope.ngModel[currentYear.year()].blue) {
+                                scope.ngModel[currentYear.year()].blue = [];
+                            }
                         },
                         getDaysOfWeek = function () {
                             /*To display days of week names in moment.lang*/
@@ -224,25 +239,6 @@
                             }
 
                             return days;
-                        },
-                        getMonthYearToDisplay = function () {
-                            var month = scope.month.format('MMMM');
-                            return month.charAt(0).toUpperCase() + month.slice(1);
-                        },
-                        getYearsForSelect = function () {
-                            var now = moment(),
-                                changeYearPast = Math.max(0, parseInt(scope.changeYearPast, 10) || 0),
-                                changeYearFuture = Math.max(0, parseInt(scope.changeYearFuture, 10) || 0),
-                                min = moment(scope.month).subtract(changeYearPast, 'year'),
-                                max = moment(scope.month).add(changeYearFuture, 'year'),
-                                result = [];
-                            max.add(1, 'year');
-                            for (var m = moment(min); max.isAfter(m, 'YEAR'); m.add(1, 'year')) {
-                                if ((!scope.disallowBackPastMonths || (m.isAfter(now, 'year') || m.isSame(now, 'year'))) && (!scope.disallowGoFuturMonths || (m.isBefore(now, 'year') || m.isSame(now, 'year')))) {
-                                    result.push(m.format('YYYY'));
-                                }
-                            }
-                            return result;
                         },
                         getMonthDays = function (month) {
                             var previousDay = moment(month).date(0).day(scope.sundayFirstDay ? 0 : 1).subtract(1, 'day');
@@ -375,6 +371,7 @@
                     scope.cssDaysOfSurroundingMonths = scope.cssDaysOfSurroundingMonths || 'picker-empty';
                     scope.yearsForSelect = [];
                     scope.currentColorGroup = 'red';
+                    scope.currentColorClass = 'multipleDatePicker-red';
                     scope.availableColorGroups = ['red', 'green', 'blue'];
 
                     /**
@@ -403,24 +400,24 @@
                             day.mdp.selected = !day.mdp.selected;
                             if (day.mdp.selected) {
                                 day.mdp.colorGroup = scope.currentColorGroup;
-                                scope.ngModel[scope.currentColorGroup].push(day.date);
+                                scope.ngModel[scope.year.year()][scope.currentColorGroup].push(day.date);
                             } else {
                                 var idx = -1;
                                 angular.forEach(scope.availableColorGroups, function(value) {
-                                    for (var i = 0; i < scope.ngModel[value].length; ++i) {
-                                        if (moment.isMoment(scope.ngModel[value][i])) {
-                                            if (scope.ngModel[value][i].isSame(day.date, 'day')) {
+                                    for (var i = 0; i < scope.ngModel[scope.year.year()][value].length; ++i) {
+                                        if (moment.isMoment(scope.ngModel[scope.year.year()][value][i])) {
+                                            if (scope.ngModel[scope.year.year()][value][i].isSame(day.date, 'day')) {
                                                 idx = i;
                                                 break;
                                             }
                                         } else {
-                                            if (day.date.isSame(scope.ngModel[value][i], 'day')) {
+                                            if (day.date.isSame(scope.ngModel[scope.year.year()][value][i], 'day')) {
                                                 idx = i;
                                                 break;
                                             }
                                         }
                                     }
-                                    if (idx !== -1) scope.ngModel[value].splice(idx, 1);
+                                    if (idx !== -1) scope.ngModel[scope.year.year()][value].splice(idx, 1);
                                 });
                             }
                             day.classes = scope.getDayClasses(day);
@@ -451,6 +448,7 @@
 
                     scope.changeGroupColor = function(color) {
                         scope.currentColorGroup = color;
+                        scope.currentColorClass = 'multipleDatePicker-' + color;
                     };
 
                     scope.groupActiveClass = function (color) {
@@ -462,8 +460,8 @@
                     scope.getColorGroup = function (day) {
                         var selected = false;
                         angular.forEach(scope.availableColorGroups, function(value) {
-                            if (scope.ngModel[value]) {
-                                selected = scope.ngModel[value].some(function (d) {
+                            if (scope.ngModel[scope.year.year()][value]) {
+                                selected = scope.ngModel[scope.year.year()][value].some(function (d) {
                                     return day.date.isSame(d, 'day');
                                 });
                                 if (selected) {
@@ -472,6 +470,48 @@
                                 }
                             }
                         });
+                    };
+
+                    scope.copyPreviousYear = function() {
+                        var yearToCopy = scope.year.year() - 1;
+                        if (scope.ngModel[yearToCopy]) {
+                            alert = $mdDialog.confirm()
+                                .title($translate.instant('TEXT.SAVED_TITLE'))
+                                .content($translate.instant('TEXT.SAVED_MESSAGE'))
+                                .ok($translate.instant('TEXT.ACCEPT'))
+                                .cancel($translate.instant('TEXT.CANCEL'));
+                            $mdDialog
+                                .show( alert )
+                                .then(function() {
+                                    copyYearCalendar(yearToCopy);
+                                }, function () {
+                                    console.log("Rechazado");
+                                }
+                            );
+                        } else {
+                            alert = $mdDialog.alert()
+                                .title($translate.instant('TEXT.ERROR'))
+                                .content($translate.instant('QUEUE.LINEAR_ERROR'))
+                                .ok($translate.instant('TEXT.ACCEPT'));
+                            $mdDialog
+                                .show( alert )
+                                .finally();
+                        }
+
+                    };
+
+                    var copyYearCalendar = function (year) {
+                        scope.ngModel[scope.year.year()] = angular.copy(scope.ngModel[year]);
+                        angular.forEach(scope.availableColorGroups, function(value) {
+                            for (var i in scope.ngModel[scope.year.year()][value]) {
+                                if (moment.isMoment(scope.ngModel[scope.year.year()][value][i])) {
+                                    scope.ngModel[scope.year.year()][value][i].add(1, 'year');
+                                } else {
+                                    scope.ngModel[scope.year.year()][value][i] = moment(scope.ngModel[scope.year.year()][value][i]).add(1, 'year');
+                                }
+                            }
+                        });
+                        scope.generate();
                     };
 
                     /**
@@ -582,8 +622,8 @@
                         var selected = false;
                         angular.forEach(scope.availableColorGroups, function(value) {
                             if (!selected) {
-                                if (scope.ngModel[value]) {
-                                    selected = scope.ngModel[value].some(function (d) {
+                                if (scope.ngModel[scope.year.year()][value]) {
+                                    selected = scope.ngModel[scope.year.year()][value].some(function (d) {
                                         return day.date.isSame(d, 'day');
                                     });
                                 }
@@ -594,7 +634,6 @@
 
                     /*Generate the calendar*/
                     scope.generate = function () {
-                        console.log(scope.year);
                         moment.locale('es');
                         var yearMoment = moment().year(scope.year.year());
                         scope.months = [];
@@ -607,7 +646,6 @@
                             };
                             scope.months.push(month);
                         }
-                        console.log("generate called");
                         checkNavigationButtons();
                     };
 
@@ -616,20 +654,6 @@
                     scope.generate();
                     scope.groupActiveClass();
                 }
-            };
-        }
-        ;
-
-    angular.module('multipleDatePicker', [])
-        .directive('multipleDatePicker', multipleDatePicker)
-        .directive('mdpRightClick', ['$parse', function ($parse) {
-            return function (scope, element, attrs) {
-                var fn = $parse(attrs.mdpRightClick);
-                element.bind('contextmenu', function (event) {
-                    scope.$apply(function () {
-                        fn(scope, {$event: event});
-                    });
-                });
             };
         }]);
 

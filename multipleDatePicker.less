@@ -1,49 +1,78 @@
-
 @border-color: #eee;
 @empty-day-background: #fafafa;
 @picker-day-today: #00a3ff;
-
 @non-pickable-day-background: #eee;
 @non-pickable-day-color: #bbb;
-
 @pickable-day-non-picked-background: #fff;
 @pickable-day-non-picked-color: #000;
-
 @pickable-day-picked-background: #C6000B;
 @pickable-day-picked-color: #fff;
-
 /* Barnetik Changes END */
 @desktop: ~"only screen and (min-width: 720px)";
 @phones: ~"only screen and (max-width: 720px)";
-
 @red: #C6000B;
 @green: #94C970;
 @blue: #00BCD1;
+@grey: #EEEEEE;
 
 .picker-days-week-row > div {
     text-transform: capitalize;
 }
 
-.text-center{
-  text-align: center;
+.text-center {
+    text-align: center;
 }
 
-.multiple-date-picker{
-  user-select: none;
+.multiple-date-picker {
+    user-select: none;
 }
-.multiple-date-picker, .picker-top-row, .picker-days-week-row, .picker-days-row {
-  width: 100%;
-  flex-wrap: wrap;
-  justify-content: space-between;
+
+.multiple-date-picker,
+.picker-days-row,
+.picker-days-week-row,
+.picker-top-row {
+    width: 100%;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+.copyPastYear {
+    width: 100%;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    justify-content: space-between;
+    margin: 0 20px;
+}
+button.md-fab.md-mini.multipleDatePicker-red.md-button,
+button.md-fab.md-mini.multipleDatePicker-green.md-button,
+button.md-fab.md-mini.multipleDatePicker-blue.md-button {
+    color: #fff;
+}
+button.md-fab.md-mini.multipleDatePicker-red.md-button,
+button.md-fab.md-mini.multipleDatePicker-red.md-button:hover {
+    background-color: @red;
+}
+button.md-fab.md-mini.multipleDatePicker-green.md-button,
+button.md-fab.md-mini.multipleDatePicker-green.md-button:hover {
+    background-color: @green;
+}
+button.md-fab.md-mini.multipleDatePicker-blue.md-button,
+button.md-fab.md-mini.multipleDatePicker-blue.md-button:hover {
+    background-color: @blue;
+}
+
+.yearWrapper {
+    background-color: @grey;
+    margin: 20px;
 }
 
 .monthWrapper {
     margin: 20px;
-
     @media @desktop {
         flex: 1 0 30%;
     }
-
     @media @phones {
         flex: 1 0 90%;
     }
@@ -69,103 +98,114 @@
     height: 25px;
     margin: 20px 0;
 }
+
 .groupColorPicker .color.active {
     border: 2px solid #000;
 }
+
 .groupColorPicker .color.red:not(.picker-empty) {
     background-color: @red;
 }
+
 .groupColorPicker .color.green:not(.picker-empty) {
     background-color: @green;
 }
+
 .groupColorPicker .color.blue:not(.picker-empty) {
     background-color: @blue;
 }
-
 /* Barnetik Changes END */
-
-.picker-top-row > div{
-  display: inline-block;
+.picker-top-row > div {
+    display: inline-block;
 }
 
-.picker-navigate{
-  width: 16.66%;
+.picker-navigate {
+    width: 16.66%;
 }
 
-.picker-navigate:hover{
-  cursor: pointer;
+.picker-navigate:hover {
+    cursor: pointer;
 }
 
-.picker-navigate.disabled, .picker-navigate.disabled:hover{
-  color:#ddd;
-  cursor: default;
+.picker-navigate.disabled,
+.picker-navigate.disabled:hover {
+    color: #ddd;
+    cursor: default;
 }
 
-.picker-month{
-  width: 66.66%;
+.picker-month {
+    width: 66.66%;
 }
 
-.picker-days-week-row > div{
-  width:14.28%;
-  display: inline-block;
+.picker-days-week-row > div {
+    width: 14.28%;
+    display: inline-block;
 }
 
-.picker-days-row > div{
-  width:14.28%;
-  display: inline-block;
+.picker-days-row > div {
+    width: 14.28%;
+    display: inline-block;
 }
 
-.picker-days-row > div{
-  width:14.28%;
-  display: inline-block;
+.picker-days-row > div {
+    width: 14.28%;
+    display: inline-block;
 }
 
-.picker-top-row, .picker-day{
-  padding: 10px 0;
+.picker-day,
+.picker-top-row {
+    padding: 10px 0;
 }
 
-.picker-day{
-  background-color: @pickable-day-non-picked-background;
-  border: 1px solid @border-color;
-  box-sizing: border-box;
-  color:@pickable-day-non-picked-color;
+.picker-day {
+    background-color: @pickable-day-non-picked-background;
+    border: 1px solid @border-color;
+    box-sizing: border-box;
+    color: @pickable-day-non-picked-color;
 }
 
-.picker-day.today, .picker-day.today:hover, .picker-day.today.picker-selected, .picker-day.today.picker-off, .picker-day.today.picker-off:hover{
-  color: @picker-day-today;
+.picker-day.today,
+.picker-day.today.picker-off,
+.picker-day.today.picker-off:hover,
+.picker-day.today.picker-selected,
+.picker-day.today:hover {
+    color: @picker-day-today;
 }
 
 .picker-day:not(.picker-off):not(.picker-empty):hover {
-  background-color: @pickable-day-picked-background;
-  color: @pickable-day-picked-color;
-  cursor: pointer;
+    background-color: @pickable-day-picked-background;
+    color: @pickable-day-picked-color;
+    cursor: pointer;
 }
 
-.picker-day.picker-selected{
-  color: @pickable-day-picked-color;
+.picker-day.picker-selected {
+    color: @pickable-day-picked-color;
 }
 
 .picker-day.currentred:not(.picker-off):not(.picker-empty):hover,
-.picker-day.picker-selected.red:not(.picker-empty){
+.picker-day.picker-selected.red:not(.picker-empty) {
     background-color: @red;
 }
 
 .picker-day.currentgreen:not(.picker-off):not(.picker-empty):hover,
-.picker-day.picker-selected.green:not(.picker-empty){
+.picker-day.picker-selected.green:not(.picker-empty) {
     background-color: @green;
 }
+
 .picker-day.currentblue:not(.picker-off):not(.picker-empty):hover,
-.picker-day.picker-selected.blue:not(.picker-empty){
+.picker-day.picker-selected.blue:not(.picker-empty) {
     background-color: @blue;
 }
 
-.picker-day.picker-off, .picker-day.picker-off:hover{
-  background-color: @non-pickable-day-background;
-  color: @non-pickable-day-color;
-  cursor: default;
+.picker-day.picker-off,
+.picker-day.picker-off:hover {
+    background-color: @non-pickable-day-background;
+    color: @non-pickable-day-color;
+    cursor: default;
 }
 
-.picker-day.picker-empty, .picker-day.picker-empty:hover{
-  background-color: @empty-day-background;
-  cursor: default;
+.picker-day.picker-empty,
+.picker-day.picker-empty:hover {
+    background-color: @empty-day-background;
+    cursor: default;
 }
